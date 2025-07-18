@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <h2 class="text-2xl font-bold mb-6 text-blue-900 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+        </svg>
+        Climate News
+    </h2>
+
+    <div id="news-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for article in articles %}
+            {% include 'news_fragment.html' %}
+        {% endfor %}
+    </div>
+
+    <div id="loading" class="py-8 text-center text-blue-700">
+        {% if next_page %}Scroll down to load more articles...{% else %}No more articles to load.{% endif %}
+    </div>
+</div>
+
+<script>
+let nextPage = "{{ next_page }}";
+let loading = false;
+
+window.addEventListener('scroll', async () => {
+    const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+    const loadingElement = document.getElementById("loading");
+
+    if (nearBottom && !loading && nextPage) {
+        loading = true;
+        loadingElement.innerHTML = `
+            <div class="flex justify-center items-center space-x-2">
+                <div class="w-4 h-4 rounded-full bg-blue-600 animate-bounce"></div>
+                <div class="w-4 h-4 rounded-full bg-blue-600 animate-bounce" style="animation-delay: 0.2s"></div>
+                <div class="w-4 h-4 rounded-full bg-blue-600 animate-bounce" style="animation-delay: 0.4s"></div>
+            </div>
+            <p class="mt-2">Loading more articles...</p>
+        `;
+
+        try {
+            const res = await fetch(`/load-news?nextPage=${nextPage}`);
+            const data = await res.json();
+
+            if (data.html) {
+                document.getElementById('news-container').insertAdjacentHTML('beforeend', data.html);
+                nextPage = data.next_page;
+            } else {
+                nextPage = null;
+                loadingElement.innerHTML = "You've reached the end of available articles.";
+            }
+        } catch (err) {
+            console.error("Error loading more news:", err);
+            loadingElement.innerHTML = "Error loading articles. Try scrolling again.";
+        } finally {
+            loading = false;
+        }
+    }
+});
+</script>
+{% endblock %}

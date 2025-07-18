@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block body %}
+<!-- Search Form -->
+<div class="mb-8 p-4 bg-blue-50 rounded-lg">
+    <form method="POST" action="/" class="flex flex-col md:flex-row gap-4">
+        <input type="text" name="location" placeholder="Enter city, country (e.g. London, UK)" 
+               value="{{ location if location else '' }}"
+               class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition duration-200">
+            Search Location
+        </button>
+    </form>
+
+    {% if location_error %}
+    <div class="mt-3 p-3 bg-red-100 text-red-700 rounded">
+        {{ location_error }}
+    </div>
+    {% endif %}
+
+    {% if coordinates %}
+    <div class="mt-3 text-sm text-gray-600">
+        Showing data for: <span class="font-semibold">{{ location }}</span>
+        ({{ coordinates.latitude|round(2) }}°N, {{ coordinates.longitude|round(2) }}°E)
+    </div>
+    {% endif %}
+</div>
+
+<!-- Current Weather Section -->
+<h2 class="text-2xl font-bold mb-4">
+    {% if location %} Weather Now ({{ location }}){% else %} Weather Now (Harare){% endif %}
+</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Temperature</h3>
+        <p class="text-3xl font-bold">{{ weather.current.temperature_2m|default('N/A') }} °C</p>
+        <div class="mt-2 text-sm text-gray-600">
+            High: {{ weather.daily.temperature_2m_max[0]|default('N/A') }}°C<br>
+            Low: {{ weather.daily.temperature_2m_min[0]|default('N/A') }}°C
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Wind</h3>
+        <p class="text-3xl font-bold">{{ weather.current.wind_speed_10m|default('N/A') }} m/s</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Precipitation</h3>
+        <p class="text-3xl font-bold">{{ weather.current.precipitation|default('N/A') }} mm</p>
+        <div class="mt-2 text-sm text-gray-600">
+            Humidity: {{ weather.hourly.relative_humidity_2m[0]|default('N/A') }}%
+        </div>
+    </div>
+</div>
+
+<!-- Climate Trends Section -->
+<h2 class="text-2xl font-bold mb-4"> Climate Trends (1990-2020)</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-4 rounded-lg shadow">
+        <canvas id="tempChart" class="w-full h-64"></canvas>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow">
+        <canvas id="rainChart" class="w-full h-64"></canvas>
+    </div>
+</div>
+
+<script>
+    // Chart data
+    const labels = {{ trend_years | tojson }};
+    const maxTemps = {{ max_temps | tojson }};
+    const minTemps = {{ min_temps | tojson }};
+    const rainfall = {{ rainfall | tojson }};
+
+    // Temperature Chart
+    new Chart(document.getElementById('tempChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Max Temperature (°C)',
+                    data: maxTemps,
+                    borderColor: 'rgb(239, 68, 68)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.3,
+                    borderWidth: 2,
+                    fill: true
+                },
+                {
+                    label: 'Min Temperature (°C)',
+                    data: minTemps,
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.3,
+                    borderWidth: 2,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Temperature Trends (1990-2020)'
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Rainfall Chart
+    new Chart(document.getElementById('rainChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Annual Rainfall (mm)',
+                data: rainfall,
+                backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                borderColor: 'rgba(16, 185, 129, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Rainfall Trends (1990-2020)'
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Rainfall (mm)'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

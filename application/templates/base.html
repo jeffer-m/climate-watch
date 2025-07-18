@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Watch</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Optional: Chart.js (for charts later) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-900 text-white px-6 py-4 shadow-md">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-semibold">Climate Watch</h1>
+            <div class="space-x-6">
+                <a href="{{ url_for('routes.index') }}" class="hover:underline">Dashboards</a>
+                <a href="{{ url_for('routes.climate_news') }}" class="hover:underline">Climate News</a>
+                <a href="{{ url_for('routes.climate_art') }}" class="hover:underline">Climate Art</a>
+                <a href="{{ url_for('routes.climate_oracle') }}" class="hover:underline">Climate Oracle</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        {% block body %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>

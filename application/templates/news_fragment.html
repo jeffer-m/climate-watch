@@ -1,0 +1,49 @@
+<article class="news-article bg-white rounded-xl shadow-md overflow-hidden border border-blue-50 hover:shadow-lg transition duration-200">
+    {% if article.image_url %}
+    <img src="{{ article.image_url }}" alt="{{ article.title }}" class="w-full h-48 object-cover">
+    {% else %}
+    <div class="w-full h-48 bg-blue-100 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+    </div>
+    {% endif %}
+    
+    <div class="p-6">
+        <div class="flex items-center text-sm text-gray-500 mb-2">
+            <span>{{ article.pubDate|default('No date', true) }}</span>
+            <span class="mx-2">•</span>
+            <span>{{ article.source_id|default('Unknown source', true) }}</span>
+        </div>
+        
+        <h3 class="text-xl font-bold text-gray-800 mb-2">
+            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600">
+                {{ article.title }}
+            </a>
+        </h3>
+        
+        <p class="text-gray-600 mb-4">{{ article.description|default('No description available.', true)|truncate(200) }}</p>
+        
+        <div class="flex justify-between items-center">
+            <div class="flex space-x-2">
+                {% if article.keywords %}
+                    {# Handle both string (comma-separated) and list keywords #}
+                    {% set keywords = article.keywords.split(',') if article.keywords is string else article.keywords %}
+                    {% for keyword in keywords[:3] %}
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            {{ keyword|trim }}
+                        </span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" 
+               class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                Read more
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            </a>
+        </div>
+    </div>
+</article>
