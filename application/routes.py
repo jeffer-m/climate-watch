@@ -1,5 +1,7 @@
-from flask import Flask, render_template,Blueprint,jsonify,request
+from flask import Flask, render_template, Blueprint, jsonify, request, flash, redirect, url_for
 from .api_utils import get_climate_data, get_climate_news,get_weather_data,get_coordinates
+from flask_login import login_required,current_user
+from application.models import db,Post
 
 
 routes = Blueprint('routes', __name__)
@@ -57,11 +59,28 @@ def load_news():
         "next_page": new_next_page
     })
 
+@routes.route('/climate-art')
+def climate_art():
+    posts= Post.query.order_by(Post.date_created.desc()).all()
+    return render_template('climate-art.html', posts = posts)
+
+@routes.route('/create', methods = ['GET','POST'])
+@login_required
+def create_post():
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        post = Post(title=title,content=content,author = current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash("Post created")
+        return redirect(url_for('main.index'))
+    return render_template('create_post.html')
+
+
 
 @routes.route('/climate-oracle')
 def climate_oracle():
     return render_template('climate-oracle.html')
 
-@routes.route('/climate-art')
-def climate_art():
-    return render_template('climate-art.html')
+
