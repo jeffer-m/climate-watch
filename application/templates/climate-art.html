@@ -3,8 +3,24 @@
 {% block body %}
   <h1 class="text-3xl font-bold text-blue-900 mb-6">The Creatives</h1>
 
-  {% if posts %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <!-- Share Art Button or Prompt -->
+  {% if current_user.is_authenticated %}
+    <div class="mb-6">
+      <a href="{{ url_for('routes.create_post') }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        Share Your Art
+      </a>
+    </div>
+  {% else %}
+    <div class="mb-6 text-gray-700 italic">
+      Want to share your own art? 
+      <a href="{{ url_for('routes.login') }}" class="text-blue-700 underline">Log in</a> or 
+      <a href="{{ url_for('routes.register') }}" class="text-blue-700 underline">register</a> first.
+    </div>
+  {% endif %}
+
+  <!-- Posts Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% if posts %}
       {% for post in posts %}
         <div class="bg-white shadow-md rounded-xl p-6 hover:shadow-lg transition">
           <h2 class="text-xl font-semibold text-gray-800">{{ post.title }}</h2>
@@ -12,8 +28,14 @@
           <p class="text-sm text-gray-500 mt-4">Posted on {{ post.date_created.strftime('%Y-%m-%d') }}</p>
         </div>
       {% endfor %}
-    </div>
-  {% else %}
-    <p class="text-gray-600">No posts available at the moment. Check back soon!</p>
-  {% endif %}
+    {% else %}
+      <!-- Show blank templates when no posts -->
+      <div class="bg-white shadow-md rounded-xl p-6 text-center text-gray-400 italic">
+        Nothing yet — yours could be the first!
+      </div>
+      <div class="bg-white shadow-md rounded-xl p-6 text-center text-gray-400 italic">
+        Share your thoughts on climate through art.
+      </div>
+    {% endif %}
+  </div>
 {% endblock %}

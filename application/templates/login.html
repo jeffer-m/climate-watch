@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block body %}
+  <div class="container">
+    <h2>Welcome </h2>
+    <form action="{{ url_for('routes.login') }}" method="POST">
+        <input type="text" name="username" placeholder="username" class="input-field">
+        <input type="password" name="password" placeholder="password" class="input-field">
+        <input type="submit" value="Login" class="btn btn-login">
+        <a href="{{ url_for('routes.register') }}" class="btn btn-login">Register</a>
+    </form>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="fixed top-4 inset-x-0 flex justify-center z-50">
+        <div class="space-y-2 w-full max-w-md">
+          {% for category, message in messages %}
+            <div class="px-4 py-3 rounded-lg shadow-md text-white 
+                        {% if category == 'success' %} bg-green-500 
+                        {% elif category == 'danger' %} bg-red-500 
+                        {% elif category == 'warning' %} bg-yellow-500 text-black
+                        {% else %} bg-blue-500 
+                        {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+{% endwith %}
+
+  </div>
+{% endblock %}

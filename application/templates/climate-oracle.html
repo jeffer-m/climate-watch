@@ -1,5 +1,15 @@
 {% extends 'base.html' %}
 
 {% block body %}
- <h1>Chat with our Oracle</h1>
+  <form method="post" action="/oracle/predict">
+    <textarea name="news_text" rows="6" placeholder="Paste climate news here..." class="w-full p-2"></textarea>
+    <button type="submit" class="mt-2 bg-green-600 text-white px-4 py-2 rounded">Analyze</button>
+  </form>
+
+  {% if prediction %}
+    <div class="mt-4">
+      <p><strong>Prediction:</strong> {{ prediction }}</p>
+      <p><strong>Your Input:</strong> {{ input }}</p>
+    </div>
+  {% endif %}
 {% endblock %}

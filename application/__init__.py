@@ -4,6 +4,7 @@ from .routes import routes
 from .extensions import db, login_manager
 from dotenv import load_dotenv
 import os
+from application.models import User
 
 def create_app():
     load_dotenv()
@@ -14,7 +15,11 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = 'auth.login'
+    login_manager.login_view = "routes.login"
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
     app.register_blueprint(routes)
     return app
