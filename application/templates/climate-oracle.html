@@ -1,15 +1,62 @@
 {% extends 'base.html' %}
 
 {% block body %}
-  <form method="post" action="/oracle/predict">
-    <textarea name="news_text" rows="6" placeholder="Paste climate news here..." class="w-full p-2"></textarea>
-    <button type="submit" class="mt-2 bg-green-600 text-white px-4 py-2 rounded">Analyze</button>
-  </form>
+<div class="max-w-2xl mx-auto mt-6 bg-white rounded-2xl shadow-lg p-4">
+  <h2 class="text-xl font-bold text-green-700 mb-4">🌍 Climate Oracle</h2>
+  
+  <!-- Chat Display -->
+  <div id="chat-display" class="h-96 overflow-y-auto border rounded-lg p-3 space-y-3 bg-gray-50">
+    <!-- Messages will appear here -->
+  </div>
 
-  {% if prediction %}
-    <div class="mt-4">
-      <p><strong>Prediction:</strong> {{ prediction }}</p>
-      <p><strong>Your Input:</strong> {{ input }}</p>
-    </div>
-  {% endif %}
+  <!-- Input Area -->
+  <div class="mt-3 flex items-center space-x-2">
+    <input type="text" id="user-input" placeholder="Ask the Oracle..."
+      class="flex-grow border rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+    <button id="send" 
+      class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition">
+      Send
+    </button>
+  </div>
+</div>
+
+<script>
+  const sendBtn = document.getElementById("send");
+  const userInput = document.getElementById("user-input");
+  const chatDisplay = document.getElementById("chat-display");
+
+  function appendMessage(sender, text) {
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add("p-2", "rounded-xl", "max-w-[80%]");
+    if (sender === "user") {
+      msgDiv.classList.add("bg-green-600", "text-white", "ml-auto");
+    } else {
+      msgDiv.classList.add("bg-gray-200", "text-gray-800", "mr-auto");
+    }
+    msgDiv.innerText = text;
+    chatDisplay.appendChild(msgDiv);
+    chatDisplay.scrollTop = chatDisplay.scrollHeight; // auto-scroll
+  }
+
+  async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+    appendMessage("user", text);
+    userInput.value = "";
+
+    // Send to Flask backend
+    const res = await fetch("/oracle/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
+    const data = await res.json();
+    appendMessage("oracle", data.reply);
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  userInput.addEventListener("keypress", e => {
+    if (e.key === "Enter") sendMessage();
+  });
+</script>
 {% endblock %}

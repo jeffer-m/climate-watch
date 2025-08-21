@@ -1,7 +1,9 @@
+
+#routes.py
 from flask import Flask, render_template, Blueprint, jsonify, request, flash, redirect, url_for
 from .api_utils import get_climate_data, get_climate_news,get_weather_data,get_coordinates
 from flask_login import login_required,current_user,login_user
-from application.models import db,Post, User
+from application.models import db,Post, User,check_password_hash
 
 import joblib
 from flask import request, render_template
@@ -86,44 +88,44 @@ def create_post():
 @routes.route('/climate-oracle')
 @login_required
 def climate_oracle():
+    print("User is logged in:", current_user.username)
     return render_template('climate-oracle.html')
 
 
 
+#ALL LOGIN LOGIC
 @routes.route('/login', methods=['GET', 'POST'])
 def login():
-    next_page = request.args.get('next')  # get the next destination
-
     if request.method == 'POST':
-        action = request.form.get('action')
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username')
+        password = request.form.get('password')
+        print(f"Login attempt - Username: {username}, Password: {password}")
 
-        if action == 'login':
-            user = User.query.filter_by(username=username).first()
-            if user and user.check_password(password):
-                login_user(user)
-                flash("Welcome back!", "success")
-                return redirect(next_page or url_for('routes.index'))
+        user = User.query.filter_by(username=username).first()
+        print(f"User found: {user}")
 
-            flash("Invalid credentials", "danger")
+        if user and password is not None and check_password_hash(user.password, password):
+            login_user(user)
+            print(f"Logged in user: {user.username}")
+            flash('Logged in successfully.', 'success')
 
-        elif action == 'register':
-            existing_user = User.query.filter_by(username=username).first()
-            if existing_user:
-                flash("Username already exists", "warning")
-            else:
-                new_user = User(username=username)
-                new_user.set_password(password)
-                db.session.add(new_user)
-                db.session.commit()
-                login_user(new_user)
-                flash("Registered and logged in!", "success")
-                return redirect(next_page or url_for('routes.index'))
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('routes.climate_oracle'))
+        else:
+            print("Login failed")
+            flash('Invalid username or password.', 'danger')
 
     return render_template('login.html')
 
 
+from flask_login import logout_user
+
+@routes.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("Logged out successfully", "info")
+    return redirect(url_for('routes.login'))
 
 
 @routes.route('/register', methods=['GET', 'POST'])
@@ -149,11 +151,21 @@ def register():
     return render_template('register.html')
 
 
-from flask_login import logout_user
+#ROUTES FOR THE ORACLE
 
-@routes.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    flash("Logged out successfully", "info")
-    return redirect(url_for('routes.login'))
+def oracle_response(user_message: str) -> str:
+    if "climate change" in user_message.lower():
+        return "Climate change refers to long-term shifts in temperatures and weather patterns."
+    elif "renewable" in user_message.lower():
+        return "Renewable energy sources like solar and wind can greatly reduce emissions."
+    else:
+        return "I'm still learning . Could you ask about climate change, energy, or the environment?"
+
+@routes.route("/oracle/chat", methods=["POST"])
+def oracle_chat():
+    data = request.get_json()
+    user_message = data.get("message", "")
+    response_text = oracle_response(user_message)
+    return jsonify({"reply": response_text})
+
+

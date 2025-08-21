@@ -17,14 +17,42 @@
     <nav class="bg-blue-900 text-white px-6 py-4 shadow-md">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-xl font-semibold">Climate Watch</h1>
-            <div class="space-x-6">
+            
+            <div class="space-x-6 flex items-center">
                 <a href="{{ url_for('routes.index') }}" class="hover:underline">Dashboards</a>
                 <a href="{{ url_for('routes.climate_news') }}" class="hover:underline">Climate News</a>
                 <a href="{{ url_for('routes.climate_art') }}" class="hover:underline">Climate Art</a>
                 <a href="{{ url_for('routes.climate_oracle') }}" class="hover:underline">Climate Oracle</a>
+
+                <!-- Session Awareness -->
+                {% if current_user.is_authenticated %}
+                    <span class="ml-4">Welcome, {{ current_user.username }}</span>
+                    <a href="{{ url_for('routes.logout') }}" class="hover:underline">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('routes.login') }}" class="hover:underline">Login</a>
+                    <a href="{{ url_for('routes.register') }}" class="hover:underline">Register</a>
+                {% endif %}
             </div>
         </div>
     </nav>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="max-w-7xl mx-auto mt-4 px-4">
+            {% for category, message in messages %}
+              <div class="p-4 mb-2 rounded shadow text-white 
+                          {% if category == 'success' %} bg-green-600
+                          {% elif category == 'info' %} bg-blue-600
+                          {% elif category == 'warning' %} bg-yellow-600
+                          {% elif category == 'danger' %} bg-red-600
+                          {% else %} bg-gray-600 {% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
 
     <!-- Page Content -->
     <main class="max-w-7xl mx-auto px-4 py-6">
